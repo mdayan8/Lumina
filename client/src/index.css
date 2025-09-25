@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Lumina Dark Theme - Purple Color Scheme */
+  --background: hsl(240, 10%, 7%);
+  --foreground: hsl(240, 5%, 96%);
+  --card: hsl(240, 10%, 9%);
+  --card-foreground: hsl(240, 5%, 90%);
+  --popover: hsl(240, 10%, 9%);
+  --popover-foreground: hsl(240, 5%, 90%);
+  --primary: hsl(255, 62%, 52%);
+  --primary-foreground: hsl(255, 100%, 95%);
+  --secondary: hsl(262, 45%, 70%);
+  --secondary-foreground: hsl(262, 10%, 15%);
+  --muted: hsl(240, 10%, 13%);
+  --muted-foreground: hsl(240, 5%, 64%);
+  --accent: hsl(240, 10%, 13%);
+  --accent-foreground: hsl(240, 5%, 90%);
+  --destructive: hsl(0, 62%, 52%);
+  --destructive-foreground: hsl(0, 85%, 96%);
+  --border: hsl(240, 10%, 18%);
+  --input: hsl(240, 10%, 18%);
+  --ring: hsl(255, 62%, 52%);
+  --chart-1: hsl(255, 62%, 52%);
+  --chart-2: hsl(262, 45%, 70%);
+  --chart-3: hsl(250, 55%, 60%);
+  --chart-4: hsl(268, 40%, 65%);
+  --chart-5: hsl(245, 50%, 75%);
+  --sidebar-background: hsl(240, 10%, 9%);
+  --sidebar-foreground: hsl(240, 5%, 90%);
+  --sidebar-primary: hsl(255, 62%, 52%);
+  --sidebar-primary-foreground: hsl(255, 100%, 95%);
+  --sidebar-accent: hsl(240, 10%, 13%);
+  --sidebar-accent-foreground: hsl(240, 5%, 90%);
+  --sidebar-border: hsl(240, 10%, 18%);
+  --sidebar-ring: hsl(255, 62%, 52%);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: 'Fira Code', monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 2px 0px 0px hsl(255 62% 52% / 0.00);
+  --shadow-xs: 0px 2px 0px 0px hsl(255 62% 52% / 0.00);
+  --shadow-sm: 0px 2px 0px 0px hsl(255 62% 52% / 0.00), 0px 1px 2px -1px hsl(255 62% 52% / 0.00);
+  --shadow: 0px 2px 0px 0px hsl(255 62% 52% / 0.00), 0px 1px 2px -1px hsl(255 62% 52% / 0.00);
+  --shadow-md: 0px 2px 0px 0px hsl(255 62% 52% / 0.00), 0px 2px 4px -1px hsl(255 62% 52% / 0.00);
+  --shadow-lg: 0px 2px 0px 0px hsl(255 62% 52% / 0.00), 0px 4px 6px -1px hsl(255 62% 52% / 0.00);
+  --shadow-xl: 0px 2px 0px 0px hsl(255 62% 52% / 0.00), 0px 8px 10px -1px hsl(255 62% 52% / 0.00);
+  --shadow-2xl: 0px 2px 0px 0px hsl(255 62% 52% / 0.00);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+@layer components {
+  /* Lumina-specific UI components */
+  .glow-purple {
+    box-shadow: 0 0 20px hsla(255, 62%, 52%, 0.3);
+  }
+
+  .glow-purple-strong {
+    box-shadow: 0 0 30px hsla(255, 62%, 52%, 0.6);
+  }
+
+  .card-3d {
+    transform: perspective(1000px) rotateX(1deg);
+    transition: all 0.3s ease;
+  }
+
+  .card-3d:hover {
+    transform: perspective(1000px) rotateX(0deg) translateY(-8px);
+  }
+
+  .floating-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 20px hsla(255, 62%, 52%, 0.3); }
+    50% { box-shadow: 0 0 40px hsla(255, 62%, 52%, 0.6); }
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%), hsl(262, 45%, 70%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .chat-bubble-user {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%), hsl(262, 45%, 70%));
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .chat-bubble-ai {
+    background: var(--card);
+    border: 1px solid var(--border);
+    animation: slideInLeft 0.3s ease-out;
+  }
+
+  @keyframes slideInRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideInLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    transition: all 0.3s ease;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--primary);
+    background: hsla(255, 62%, 52%, 0.05);
+    box-shadow: 0 0 30px hsla(255, 62%, 52%, 0.2);
+  }
+
+  .typing-indicator {
+    animation: typing 1.4s infinite;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+  }
+
+  .neon-border {
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 10px hsla(255, 62%, 52%, 0.3), inset 0 0 10px hsla(255, 62%, 52%, 0.1);
+  }
+
+  .insight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+  }
+
+  .insight-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px hsla(240, 10%, 7%, 0.3), 0 0 20px hsla(255, 62%, 52%, 0.2);
+  }
+
+  .gradient-button {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%), hsl(262, 45%, 70%));
+    transition: all 0.3s ease;
+  }
+
+  .gradient-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px hsla(255, 62%, 52%, 0.3);
+  }
+}
