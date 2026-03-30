@@ -4,3 +4,13 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.env
+.env.example
+uploads/
+*.csv
+*.pdf
+# Temporary files and backups
+*.backup
+reproduce_upload_error.sh
+setup-db.sh
+test_import.ts

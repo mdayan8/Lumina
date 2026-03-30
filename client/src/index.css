@@ -54,6 +54,42 @@
   --spacing: 0.25rem;
 }
 
+/* Light Theme */
+[data-theme="light"] {
+  --background: hsl(0, 0%, 98%);
+  --foreground: hsl(240, 5%, 10%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(240, 5%, 15%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(240, 5%, 15%);
+  --primary: hsl(255, 62%, 52%);
+  --primary-foreground: hsl(255, 100%, 95%);
+  --secondary: hsl(262, 45%, 70%);
+  --secondary-foreground: hsl(262, 10%, 15%);
+  --muted: hsl(240, 5%, 90%);
+  --muted-foreground: hsl(240, 5%, 45%);
+  --accent: hsl(240, 5%, 93%);
+  --accent-foreground: hsl(240, 5%, 15%);
+  --destructive: hsl(0, 62%, 52%);
+  --destructive-foreground: hsl(0, 85%, 96%);
+  --border: hsl(240, 5%, 85%);
+  --input: hsl(240, 5%, 85%);
+  --ring: hsl(255, 62%, 52%);
+  --chart-1: hsl(255, 62%, 52%);
+  --chart-2: hsl(262, 45%, 70%);
+  --chart-3: hsl(250, 55%, 60%);
+  --chart-4: hsl(268, 40%, 65%);
+  --chart-5: hsl(245, 50%, 75%);
+  --sidebar-background: hsl(0, 0%, 100%);
+  --sidebar-foreground: hsl(240, 5%, 15%);
+  --sidebar-primary: hsl(255, 62%, 52%);
+  --sidebar-primary-foreground: hsl(255, 100%, 95%);
+  --sidebar-accent: hsl(240, 5%, 93%);
+  --sidebar-accent-foreground: hsl(240, 5%, 15%);
+  --sidebar-border: hsl(240, 5%, 85%);
+  --sidebar-ring: hsl(255, 62%, 52%);
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -173,5 +209,150 @@
   .gradient-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px hsla(255, 62%, 52%, 0.3);
+  }
+
+  /* Light mode specific styles */
+  [data-theme="light"] .chat-bubble-ai {
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+
+  [data-theme="light"] .insight-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+
+  [data-theme="light"] .upload-zone {
+    border: 2px dashed var(--border);
+  }
+
+  [data-theme="light"] .upload-zone:hover, 
+  [data-theme="light"] .upload-zone.drag-over {
+    border-color: var(--primary);
+    background: hsla(255, 62%, 52%, 0.05);
+  }
+
+  /* Explainable AI section */
+  .explanation-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    transition: all 0.3s ease;
+  }
+
+  .explanation-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px hsla(255, 62%, 52%, 0.1);
+  }
+
+  /* Premium plan highlight */
+  .premium-plan {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--primary);
+  }
+
+  .premium-plan::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+  }
+
+  /* Personalization chip */
+  .personalization-chip {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%, 0.1), hsl(262, 45%, 70%, 0.1));
+    border: 1px solid hsla(255, 62%, 52%, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .personalization-chip:hover {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%, 0.2), hsl(262, 45%, 70%, 0.2));
+    transform: translateY(-2px);
+  }
+  
+  /* LumaDash specific styles */
+  .lumadash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .lumadash-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .lumadash-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15), 0 0 20px hsla(255, 62%, 52%, 0.2);
+  }
+  
+  /* LumaDash preview mode styles */
+  .lumadash-grid-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+  }
+  
+  .lumadash-card-preview {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .lumadash-card-preview:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2), 0 0 30px hsla(255, 62%, 52%, 0.3);
+  }
+  
+  .command-input {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+  
+  .command-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px hsla(255, 62%, 52%, 0.2);
+  }
+  
+  .suggestion-chip {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%, 0.1), hsl(262, 45%, 70%, 0.1));
+    border: 1px solid hsla(255, 62%, 52%, 0.2);
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+  
+  .suggestion-chip:hover {
+    background: linear-gradient(135deg, hsl(255, 62%, 52%, 0.2), hsl(262, 45%, 70%, 0.2));
+    transform: translateY(-2px);
+    cursor: pointer;
+  }
+
+  @keyframes progress-bar {
+    0% { width: 0%; transform: translateX(-100%); }
+    50% { width: 50%; transform: translateX(0%); }
+    100% { width: 100%; transform: translateX(100%); }
+  }
+  
+  .animate-progress-bar {
+    animation: progress-bar 1.5s ease-in-out infinite;
   }
 }

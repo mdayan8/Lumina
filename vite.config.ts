@@ -32,6 +32,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    port: 3001, // Use port 3001 for the client
     fs: {
       strict: true,
       deny: ["**/.*"],

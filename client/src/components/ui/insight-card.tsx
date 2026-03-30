@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Download, Share, TrendingUp, Users, DollarSign, BarChart } from 'lucide-react';
+import { Lightbulb, Download, Share, TrendingUp, Users, DollarSign, BarChart, PieChart, LineChart } from 'lucide-react';
 import { ChartWrapper } from '@/components/charts/chart-wrapper';
+import { KPICard } from '@/components/ui/kpi-card';
 import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,16 +16,7 @@ interface InsightCardProps {
       recommendations?: string[];
       metrics?: Record<string, any>;
     };
-    chartData?: {
-      type: string;
-      labels: string[];
-      datasets: Array<{
-        label: string;
-        data: number[];
-        backgroundColor?: string[];
-        borderColor?: string;
-      }>;
-    };
+    chartData?: any; // Changed to any to avoid type conflicts
   };
 }
 
@@ -163,19 +155,99 @@ export function InsightCard({ analysis }: InsightCardProps) {
     }
   };
 
+  const getChartIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'line':
+        return <LineChart className="w-4 h-4" />;
+      case 'pie':
+      case 'doughnut':
+        return <PieChart className="w-4 h-4" />;
+      default:
+        return <BarChart className="w-4 h-4" />;
+    }
+  };
+
+  // Extract KPIs from metrics only if there are meaningful metrics
+  const extractKPIs = () => {
+    if (!analysis.insights?.metrics || Object.keys(analysis.insights.metrics).length === 0) return [];
+    
+    // Only show KPIs if they contain meaningful business metrics (not just status messages)
+    const hasRealMetrics = Object.values(analysis.insights.metrics).some(value => 
+      typeof value === 'number' || 
+      (typeof value === 'string' && value !== 'Processing' && value !== 'Refine your question')
+    );
+    
+    if (!hasRealMetrics) return [];
+    
+    return Object.entries(analysis.insights.metrics).map(([key, value]) => {
+      // Convert key to title case
+      const title = key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase());
+      
+      // Determine trend based on value
+      let trend: 'up' | 'down' | 'neutral' = 'neutral';
+      let trendValue = '';
+      
+      if (typeof value === 'string' && value.includes('%')) {
+        const percentValue = parseFloat(value.replace('%', ''));
+        if (!isNaN(percentValue)) {
+          trend = percentValue > 0 ? 'up' : percentValue < 0 ? 'down' : 'neutral';
+          trendValue = Math.abs(percentValue).toString() + '%';
+        }
+      }
+      
+      return {
+        title,
+        value: typeof value === 'number' ? value.toLocaleString() : value,
+        trend,
+        trendValue
+      };
+    });
+  };
+
+  const kpis = extractKPIs();
+
   return (
     <Card className="insight-card mt-4">
       <CardContent className="p-6">
         <div className="grid gap-6">
+          {/* KPI Section - Only show if there are meaningful KPIs */}
+          {kpis.length > 0 && kpis.some(kpi => 
+            typeof kpi.value === 'number' || 
+            (typeof kpi.value === 'string' && 
+             kpi.value !== 'Processing' && 
+             kpi.value !== 'Refine your question' &&
+             !kpi.value.includes('Status'))
+          ) && (
+            <div>
+              <h4 className="font-semibold mb-3">Key Performance Indicators</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {kpis.slice(0, 6).map((kpi, index) => (
+                  <KPICard
+                    key={index}
+                    title={kpi.title}
+                    value={kpi.value}
+                    trend={kpi.trend}
+                    trendValue={kpi.trendValue}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Chart Section */}
           {analysis.chartData && (
             <div>
               <h4 className="font-semibold mb-3 flex items-center">
-                {getInsightIcon(analysis.chartData.type)}
-                <span className="ml-2">Data Visualization</span>
+                {getChartIcon(analysis.chartData.type)}
+                <span className="ml-2">{analysis.chartData.title || 'Data Visualization'}</span>
               </h4>
               <div className="bg-muted/50 rounded-lg p-4">
                 <ChartWrapper data={analysis.chartData} />
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                Interactive chart showing {analysis.chartData.datasets.length} dataset(s) across {analysis.chartData.labels.length} data points
               </div>
             </div>
           )}

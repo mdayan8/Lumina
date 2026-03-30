@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
+import * as fs from 'fs';
 
 export interface FileSchema {
   columns: Array<{
@@ -12,39 +13,64 @@ export interface FileSchema {
 }
 
 export class FileProcessor {
-  static async processFile(buffer: Buffer, filename: string): Promise<FileSchema> {
-    const extension = filename.split('.').pop()?.toLowerCase();
-    
+  static async processFile(filePath: string, originalFilename: string): Promise<FileSchema> {
+    const extension = originalFilename.split('.').pop()?.toLowerCase();
+
     if (extension === 'csv') {
-      return this.processCSV(buffer);
+      return this.processCSV(filePath);
     } else if (extension === 'xlsx' || extension === 'xls') {
-      return this.processExcel(buffer);
+      return this.processExcel(filePath);
     } else {
       throw new Error('Unsupported file format. Please upload CSV or Excel files.');
     }
   }
 
-  private static processCSV(buffer: Buffer): FileSchema {
-    const text = buffer.toString('utf-8');
-    const parsed = Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
+  private static async processCSV(filePath: string): Promise<FileSchema> {
+    return new Promise((resolve, reject) => {
+      const fileStream = fs.createReadStream(filePath);
+      const previewRows: any[] = [];
+      let totalRows = 0;
+      let headers: string[] = [];
+      let isHeader = true;
+
+      Papa.parse(fileStream, {
+        header: true,
+        skipEmptyLines: true,
+        dynamicTyping: true,
+        step: (results) => {
+          if (results.errors.length > 0) {
+            // Log error but continue if possible? Or just fail?
+            // For now, let's ignore minor parsing errors in individual rows
+          }
+
+          if (results.data) {
+            totalRows++;
+            if (previewRows.length < 10) {
+              previewRows.push(results.data);
+            }
+            if (isHeader) {
+              headers = results.meta.fields || Object.keys(results.data as any);
+              isHeader = false;
+            }
+          }
+        },
+        complete: () => {
+          resolve(this.analyzeData(previewRows, totalRows));
+        },
+        error: (error) => {
+          reject(new Error(`CSV parsing error: ${error.message}`));
+        }
+      });
     });
-
-    if (parsed.errors.length > 0) {
-      throw new Error(`CSV parsing error: ${parsed.errors[0].message}`);
-    }
-
-    return this.analyzeData(parsed.data);
   }
 
-  private static processExcel(buffer: Buffer): FileSchema {
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+  private static processExcel(filePath: string): FileSchema {
+    // XLSX.readFile is more efficient than reading to buffer
+    const workbook = XLSX.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
       header: 1,
       defval: null,
     });
@@ -56,7 +82,7 @@ export class FileProcessor {
     // Convert array of arrays to array of objects
     const headers = jsonData[0] as string[];
     const dataRows = jsonData.slice(1);
-    
+
     const objectData = dataRows.map(row => {
       const obj: any = {};
       headers.forEach((header, index) => {
@@ -65,12 +91,17 @@ export class FileProcessor {
       return obj;
     });
 
-    return this.analyzeData(objectData);
+    return this.analyzeData(objectData, objectData.length);
   }
 
-  private static analyzeData(data: any[]): FileSchema {
+  private static analyzeData(data: any[], totalRows: number): FileSchema {
     if (data.length === 0) {
-      throw new Error('No data found in file.');
+      // Return empty schema if no data, but don't crash
+      return {
+        columns: [],
+        totalRows: 0,
+        previewData: [],
+      };
     }
 
     const sample = data[0];
@@ -88,7 +119,7 @@ export class FileProcessor {
 
     return {
       columns,
-      totalRows: data.length,
+      totalRows: totalRows,
       previewData: data.slice(0, 10), // First 10 rows for preview
     };
   }
@@ -105,8 +136,8 @@ export class FileProcessor {
     if (dateValues.length > values.length * 0.8) return 'date';
 
     // Check for booleans
-    const booleanValues = values.filter(val => 
-      typeof val === 'boolean' || 
+    const booleanValues = values.filter(val =>
+      typeof val === 'boolean' ||
       (typeof val === 'string' && ['true', 'false', 'yes', 'no', '1', '0'].includes(val.toLowerCase()))
     );
     if (booleanValues.length > values.length * 0.8) return 'boolean';

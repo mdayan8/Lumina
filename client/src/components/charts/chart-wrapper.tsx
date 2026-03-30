@@ -10,8 +10,11 @@ import {
   Tooltip,
   Legend,
   ArcElement,
+  RadialLinearScale,
+  Filler,
+  ChartType as ChartJSType
 } from 'chart.js';
-import { Bar, Line, Pie, Doughnut } from 'react-chartjs-2';
+import { Bar, Line, Pie, Doughnut, PolarArea, Radar, Bubble, Scatter } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -22,19 +25,27 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement
+  ArcElement,
+  RadialLinearScale,
+  Filler
 );
+
+// Extend the ChartType type to include all supported types
+type ChartType = ChartJSType | 'area' | 'kpi' | 'table' | 'map' | 'gauge' | 'funnel' | 'heatmap' | 'candlestick';
 
 interface ChartWrapperProps {
   data: {
-    type: string;
+    type: ChartType;
     labels: string[];
     datasets: Array<{
       label: string;
-      data: number[];
+      data: number[] | { x: number; y: number; r?: number }[];
       backgroundColor?: string[] | string;
       borderColor?: string;
       borderWidth?: number;
+      fill?: boolean;
+      pointRadius?: number;
+      pointBackgroundColor?: string;
     }>;
   };
 }
@@ -42,34 +53,17 @@ interface ChartWrapperProps {
 export function ChartWrapper({ data }: ChartWrapperProps) {
   const chartRef = useRef<any>(null);
 
-  // Purple theme colors for Lumina
-  const purpleTheme = {
-    primary: 'hsl(255, 62%, 52%)',
-    secondary: 'hsl(262, 45%, 70%)',
-    tertiary: 'hsl(250, 55%, 60%)',
-    quaternary: 'hsl(268, 40%, 65%)',
-    quinary: 'hsl(245, 50%, 75%)',
-  };
-
-  const chartColors = [
-    purpleTheme.primary,
-    purpleTheme.secondary,
-    purpleTheme.tertiary,
-    purpleTheme.quaternary,
-    purpleTheme.quinary,
-  ];
-
-  // Prepare chart data with purple theme
+  // Prepare chart data without hardcoded colors
   const chartData = {
     labels: data.labels,
-    datasets: data.datasets.map((dataset, index) => ({
+    datasets: data.datasets.map((dataset) => ({
       ...dataset,
-      backgroundColor: dataset.backgroundColor || 
-        (data.type === 'pie' || data.type === 'doughnut' 
-          ? chartColors.slice(0, data.labels.length)
-          : chartColors[index % chartColors.length] + '80'), // Add transparency for bars/lines
-      borderColor: dataset.borderColor || chartColors[index % chartColors.length],
-      borderWidth: dataset.borderWidth || (data.type === 'line' ? 3 : 1),
+      // Only provide default colors if none are specified
+      backgroundColor: dataset.backgroundColor || undefined,
+      borderColor: dataset.borderColor || undefined,
+      borderWidth: dataset.borderWidth || (data.type === 'line' || data.type === 'radar' ? 3 : 1),
+      pointBackgroundColor: dataset.pointBackgroundColor || undefined,
+      pointRadius: dataset.pointRadius || (data.type === 'bubble' || data.type === 'scatter' ? 5 : 3),
     })),
   };
 
@@ -107,10 +101,10 @@ export function ChartWrapper({ data }: ChartWrapperProps) {
         },
       },
     },
-    scales: data.type !== 'pie' && data.type !== 'doughnut' ? {
+    scales: data.type !== 'pie' && data.type !== 'doughnut' && data.type !== 'polarArea' ? {
       x: {
         grid: {
-          display: data.type === 'line',
+          display: data.type === 'line' || data.type === 'bubble' || data.type === 'scatter' || data.type === 'area',
           color: 'hsl(240, 10%, 18%)', // border color
         },
         ticks: {
@@ -141,7 +135,35 @@ export function ChartWrapper({ data }: ChartWrapperProps) {
   };
 
   const renderChart = () => {
-    switch (data.type.toLowerCase()) {
+    // Convert our extended chart types to Chart.js types
+    let chartType = data.type;
+    
+    // Handle special cases for our extended types
+    switch (data.type) {
+      case 'area':
+        chartType = 'line';
+        // Ensure fill is true for area charts
+        chartData.datasets = chartData.datasets.map(dataset => ({
+          ...dataset,
+          fill: true
+        }));
+        break;
+      case 'kpi':
+      case 'table':
+      case 'map':
+      case 'gauge':
+      case 'funnel':
+      case 'heatmap':
+      case 'candlestick':
+        // For these types, we'll use a bar chart as a placeholder
+        chartType = 'bar';
+        break;
+      default:
+        // For standard Chart.js types, use as-is
+        break;
+    }
+
+    switch (chartType) {
       case 'bar':
         return <Bar ref={chartRef} data={chartData} options={chartOptions} />;
       case 'line':
@@ -150,6 +172,14 @@ export function ChartWrapper({ data }: ChartWrapperProps) {
         return <Pie ref={chartRef} data={chartData} options={chartOptions} />;
       case 'doughnut':
         return <Doughnut ref={chartRef} data={chartData} options={chartOptions} />;
+      case 'polarArea':
+        return <PolarArea ref={chartRef} data={chartData} options={chartOptions} />;
+      case 'radar':
+        return <Radar ref={chartRef} data={chartData} options={chartOptions} />;
+      case 'bubble':
+        return <Bubble ref={chartRef} data={chartData} options={chartOptions} />;
+      case 'scatter':
+        return <Scatter ref={chartRef} data={chartData} options={chartOptions} />;
       default:
         return <Bar ref={chartRef} data={chartData} options={chartOptions} />;
     }
